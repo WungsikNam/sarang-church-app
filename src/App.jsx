@@ -1,18 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { StoreProvider, useStore } from './data/StoreContext';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
-import Home from './components/Home';
-import Announcements from './components/Announcements';
-import Bulletin from './components/Bulletin';
-import ChurchInfo from './components/ChurchInfo';
-import ServiceInfo from './components/ServiceInfo';
-import Media from './components/Media';
-import Location from './components/Location';
-import Offering from './components/Offering';
-import Congregation from './components/Congregation';
-import Admin from './components/Admin';
-import MenuPage from './components/MenuPage';
+
+const Home         = lazy(() => import('./components/Home'));
+const Announcements= lazy(() => import('./components/Announcements'));
+const Bulletin     = lazy(() => import('./components/Bulletin'));
+const ChurchInfo   = lazy(() => import('./components/ChurchInfo'));
+const ServiceInfo  = lazy(() => import('./components/ServiceInfo'));
+const Media        = lazy(() => import('./components/Media'));
+const Location     = lazy(() => import('./components/Location'));
+const Offering     = lazy(() => import('./components/Offering'));
+const Congregation = lazy(() => import('./components/Congregation'));
+const Admin        = lazy(() => import('./components/Admin'));
+const MenuPage     = lazy(() => import('./components/MenuPage'));
+
+const Spinner = () => (
+  <div style={{
+    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    minHeight: '40vh', color: 'var(--text-hint)', fontSize: '0.85rem',
+  }}>
+    <i className="fas fa-circle-notch fa-spin" style={{ marginRight: '8px' }} />
+    불러오는 중...
+  </div>
+);
 
 function AppInner() {
   const { loading } = useStore();
@@ -38,13 +49,13 @@ function AppInner() {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', gap: '16px',
+        alignItems: 'center', justifyContent: 'center', gap: '14px',
         background: '#FAF7F4',
       }}>
         <img src="/logo.svg" alt="로고"
-          style={{ width: '56px', height: '56px', opacity: 0.8 }}
+          style={{ width: '52px', height: '52px', opacity: 0.75 }}
           onError={e => { e.target.style.display = 'none'; }} />
-        <p style={{ fontSize: '0.85rem', color: '#B09880' }}>잠시만 기다려 주세요...</p>
+        <p style={{ fontSize: '0.82rem', color: '#B09880' }}>잠시만 기다려 주세요...</p>
       </div>
     );
   }
@@ -69,13 +80,19 @@ function AppInner() {
   };
 
   if (isAdmin) {
-    return <main style={{ flex: 1 }}>{renderPage()}</main>;
+    return (
+      <main style={{ flex: 1 }}>
+        <Suspense fallback={<Spinner />}>{renderPage()}</Suspense>
+      </main>
+    );
   }
 
   return (
     <>
       <Header currentPage={currentPage} navigateTo={navigateTo} />
-      <main>{renderPage()}</main>
+      <main>
+        <Suspense fallback={<Spinner />}>{renderPage()}</Suspense>
+      </main>
       <footer style={{
         padding: '20px 20px 8px',
         textAlign: 'center',
@@ -89,18 +106,10 @@ function AppInner() {
         <p style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--text)', marginBottom: '4px' }}>
           한국기독교장로회 사랑의교회
         </p>
-        <p style={{ fontSize: '0.78rem', color: 'var(--text-sub)', marginBottom: '2px' }}>
-          담임목사 김윤범
-        </p>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-hint)', marginBottom: '2px' }}>
-          경기 부천시 원미구 장말로187번길 30
-        </p>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-hint)', marginBottom: '12px' }}>
-          032-651-1691
-        </p>
-        <p style={{ fontSize: '0.68rem', color: 'var(--text-hint)', opacity: 0.5 }}>
-          © 2026 사랑의교회. All rights reserved.
-        </p>
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-sub)', marginBottom: '2px' }}>담임목사 김윤범</p>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-hint)', marginBottom: '2px' }}>경기 부천시 원미구 장말로187번길 30</p>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-hint)', marginBottom: '12px' }}>032-651-1691</p>
+        <p style={{ fontSize: '0.68rem', color: 'var(--text-hint)', opacity: 0.5 }}>© 2026 사랑의교회. All rights reserved.</p>
       </footer>
       <BottomNav current={currentPage} navigateTo={navigateTo} />
     </>
