@@ -1,0 +1,87 @@
+/**
+ * Sarang Church App Logic
+ * Handles SPA navigation and interactive features
+ */
+
+// 1. Navigation Logic
+function navigateTo(pageId, event) {
+    if (event) event.preventDefault();
+    // URL Hash 업데이트
+    window.location.hash = pageId;
+    // 즉시 화면 전환 실행 (hashchange가 안 먹히는 환경 대비)
+    renderPage(pageId);
+}
+
+// 실제 화면을 전환하는 함수
+function renderPage(forcedPageId) {
+    const pageId = forcedPageId || window.location.hash.replace('#', '') || 'home';
+
+    // 모든 페이지 숨기기
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(page => page.classList.remove('active'));
+
+    // 대상 페이지 표시
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) {
+        targetPage.classList.add('active');
+        window.scrollTo(0, 0);
+    } else {
+        // ID가 잘못되었을 경우 홈으로 복구
+        const homePage = document.getElementById('home');
+        if (homePage) homePage.classList.add('active');
+    }
+
+    // 내비게이션 UI 업데이트
+    updateNavUI(pageId);
+}
+
+function updateNavUI(pageId) {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.classList.remove('active');
+        // Map page IDs to nav items if needed, or just simple check
+        const onclick = item.getAttribute('onclick');
+        if (onclick && onclick.includes(pageId)) {
+            item.classList.add('active');
+        }
+    });
+}
+
+// 2. Copy to Clipboard Functionality
+function copyText(text) {
+    // Create a temporary textarea to copy text
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+        document.execCommand('copy');
+        alert('계좌번호가 복사되었습니다: ' + text);
+    } catch (err) {
+        console.error('복사 실패:', err);
+        alert('복사에 실패했습니다. 수동으로 복사해주세요.');
+    }
+
+    document.body.removeChild(textarea);
+}
+
+// 3. Initialize
+window.addEventListener('DOMContentLoaded', () => {
+    console.log('Sarang Church Web App Initialized');
+
+    // 초기 로드 시 현재 해시값에 맞는 페이지 렌더링
+    renderPage();
+});
+
+// 주소창의 Hash가 변경될 때마다 실행 (뒤로 가기/메뉴 클릭 대응)
+window.addEventListener('hashchange', renderPage);
+
+/**
+ * [사용자 가이드]
+ * 1. 로고 이미지: index.html의 <img> 태그 src="logo.png"를 실제 이미지 파일명으로 교체하세요.
+ * 2. 히어로 이미지: index.html의 <img> 태그 src="hero.png"를 실제 이미지 파일명으로 교체하세요.
+ * 3. 유튜브 영상: index.html의 <iframe> src URL의 'dQw4w9WgXcQ' 부분을 실제 영상 ID로 교체하세요.
+ * 4. 카카오 맵: '오시는 길' 섹션의 map-placeholder를 제거하고 Kakao Map API 스크립트를 삽입하세요.
+ * 5. 계좌 번호: offering 섹션의 계좌번호 텍스트와 copyText() 인자값을 실제 계좌로 수정하세요.
+ */
